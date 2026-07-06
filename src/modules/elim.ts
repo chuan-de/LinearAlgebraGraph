@@ -1,8 +1,7 @@
 import { Board3D, planeInBox, type V3 } from "../board3d";
+import { solve3 as solve3Arr, type M3 } from "../math";
 import { COLORS } from "../theme";
-import { el, fmt } from "../ui";
-
-type M3 = number[][];
+import { el, fmt, matrix3Input } from "../ui";
 
 interface Step {
   desc: string;
@@ -25,20 +24,10 @@ const PLANE_COLORS = [COLORS.cyan, COLORS.red, COLORS.green];
 const clone = (m: M3): M3 => m.map((r) => [...r]);
 const identity = (): M3 => [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
 
-function det3(m: M3): number {
-  return (
-    m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
-    m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
-    m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])
-  );
-}
-
-/** Cramer 法则解 3×3，奇异时返回 null */
+/** 解 3×3 并转成 V3，奇异时返回 null */
 function solve3(A: M3, b: number[]): V3 | null {
-  const d = det3(A);
-  if (Math.abs(d) < 1e-10) return null;
-  const rep = (k: number): M3 => A.map((row, i) => row.map((v, j) => (j === k ? b[i] : v)));
-  return { x: det3(rep(0)) / d, y: det3(rep(1)) / d, z: det3(rep(2)) / d };
+  const s = solve3Arr(A, b);
+  return s ? { x: s[0], y: s[1], z: s[2] } : null;
 }
 
 interface ElimResult {
@@ -130,33 +119,6 @@ function mxEl(m: M3, pivot?: [number, number], target?: [number, number], aug?: 
     if (aug) box.appendChild(el("span", "aug", fmt(Math.abs(aug[i]) < 1e-10 ? 0 : aug[i])));
   });
   return box;
-}
-
-function matrix3Input(initial: M3, onChange: (m: M3) => void): { root: HTMLElement; set(m: M3): void } {
-  const root = el("div", "matrix m3");
-  const inputs: HTMLInputElement[] = [];
-  const read = (): M3 =>
-    [0, 1, 2].map((i) =>
-      [0, 1, 2].map((j) => {
-        const v = Number.parseFloat(inputs[i * 3 + j].value);
-        return Number.isFinite(v) ? v : 0;
-      }),
-    );
-  initial.flat().forEach((v) => {
-    const inp = el("input");
-    inp.type = "number";
-    inp.step = "1";
-    inp.value = String(v);
-    inp.oninput = () => onChange(read());
-    root.appendChild(inp);
-    inputs.push(inp);
-  });
-  return {
-    root,
-    set(m: M3) {
-      m.flat().forEach((v, i) => (inputs[i].value = fmt(v)));
-    },
-  };
 }
 
 function vec3Input(initial: number[], onChange: (v: number[]) => void): { root: HTMLElement; set(v: number[]): void } {

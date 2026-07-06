@@ -1,4 +1,4 @@
-import type { Mat, Vec } from "./math";
+import type { M3, Mat, Vec } from "./math";
 
 export function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -48,6 +48,35 @@ export function matrixInput(initial: Mat, onChange: (m: Mat) => void): MatrixInp
     root,
     set(m: Mat) {
       m.forEach((v, i) => (inputs[i].value = fmt(v)));
+    },
+  };
+}
+
+export interface Matrix3Input {
+  root: HTMLElement;
+  set(m: M3): void;
+}
+
+/** 带方括号样式的 3×3 矩阵输入 */
+export function matrix3Input(initial: M3, onChange: (m: M3) => void): Matrix3Input {
+  const root = el("div", "matrix m3");
+  const inputs: HTMLInputElement[] = [];
+  const read = (): M3 =>
+    [0, 1, 2].map((i) =>
+      [0, 1, 2].map((j) => {
+        const v = Number.parseFloat(inputs[i * 3 + j].value);
+        return Number.isFinite(v) ? v : 0;
+      }),
+    );
+  initial.flat().forEach((v) => {
+    const inp = numInput(v, () => onChange(read()));
+    root.appendChild(inp);
+    inputs.push(inp);
+  });
+  return {
+    root,
+    set(m: M3) {
+      m.flat().forEach((v, i) => (inputs[i].value = fmt(v)));
     },
   };
 }

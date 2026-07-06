@@ -11,6 +11,8 @@ import { mountOde } from "./modules/ode";
 import { mountQuadform } from "./modules/quadform";
 import { mountSvd } from "./modules/svd";
 import { mountQr } from "./modules/qr";
+import { mountMarkov } from "./modules/markov";
+import { mountCompress } from "./modules/compress";
 
 interface ModuleDef {
   key: string;
@@ -43,8 +45,10 @@ const UNITS: { name: string; items: ModuleDef[] }[] = [
       { key: "eigen", lect: "L21–22", title: "特征向量", mount: mountEigen },
       { key: "powers", lect: "L22", title: "差分方程与 Aᵏ", mount: mountPowers },
       { key: "ode", lect: "L23", title: "微分方程与相图", mount: mountOde },
+      { key: "markov", lect: "L24", title: "马尔可夫矩阵与稳态", mount: mountMarkov },
       { key: "quadform", lect: "L25–28", title: "对称矩阵与正定性", mount: mountQuadform },
       { key: "svd", lect: "L29", title: "奇异值分解 SVD", mount: mountSvd },
+      { key: "compress", lect: "L31", title: "基变换与图像压缩", mount: mountCompress },
     ],
   },
 ];

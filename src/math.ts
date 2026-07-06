@@ -50,6 +50,25 @@ export function normalize(v: Vec): Vec {
   return n < 1e-12 ? { x: 0, y: 0 } : { x: v.x / n, y: v.y / n };
 }
 
+/** 3×3 矩阵（行的数组） */
+export type M3 = number[][];
+
+export function det3(m: M3): number {
+  return (
+    m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+    m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+    m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])
+  );
+}
+
+/** Cramer 法则解 3×3 方程组，奇异时返回 null */
+export function solve3(A: M3, b: number[]): [number, number, number] | null {
+  const d = det3(A);
+  if (Math.abs(d) < 1e-10) return null;
+  const rep = (k: number): M3 => A.map((row, i) => row.map((v, j) => (j === k ? b[i] : v)));
+  return [det3(rep(0)) / d, det3(rep(1)) / d, det3(rep(2)) / d];
+}
+
 export interface EigenResult {
   /** 特征值是否为实数；false 时 values 存 [实部, 虚部]，vectors 无意义 */
   real: boolean;
