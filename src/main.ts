@@ -13,6 +13,11 @@ import { mountSvd } from "./modules/svd";
 import { mountQr } from "./modules/qr";
 import { mountMarkov } from "./modules/markov";
 import { mountCompress } from "./modules/compress";
+import { mountCalc } from "./modules/nn/calc";
+import { mountProb } from "./modules/nn/prob";
+import { mountAutograd } from "./modules/nn/autograd";
+import { mountGd } from "./modules/nn/gd";
+import { mountBigram } from "./modules/nn/bigram";
 
 interface ModuleDef {
   key: string;
@@ -21,7 +26,18 @@ interface ModuleDef {
   mount: (root: HTMLElement) => () => void;
 }
 
-const UNITS: { name: string; items: ModuleDef[] }[] = [
+interface Unit {
+  name: string;
+  items: ModuleDef[];
+}
+
+interface Course {
+  key: string;
+  title: string;
+  units: Unit[];
+}
+
+const LA_UNITS: Unit[] = [
   {
     name: "单元一 · Ax = b",
     items: [
@@ -53,38 +69,87 @@ const UNITS: { name: string; items: ModuleDef[] }[] = [
   },
 ];
 
+const NN_UNITS: Unit[] = [
+  {
+    name: "第〇章 · 从零的基础",
+    items: [
+      { key: "calc", lect: "基础", title: "导数与链式法则", mount: mountCalc },
+      { key: "prob", lect: "基础", title: "概率、Softmax 与交叉熵", mount: mountProb },
+    ],
+  },
+  {
+    name: "视频① · micrograd",
+    items: [
+      { key: "autograd", lect: "①", title: "计算图与反向传播", mount: mountAutograd },
+      { key: "gd", lect: "①", title: "梯度下降实验台", mount: mountGd },
+    ],
+  },
+  {
+    name: "视频② · makemore",
+    items: [{ key: "bigram", lect: "②", title: "Bigram 语言模型", mount: mountBigram }],
+  },
+];
+
+const COURSES: Course[] = [
+  { key: "la", title: "MIT 18.06 线性代数", units: LA_UNITS },
+  { key: "nn", title: "Zero to Hero 神经网络", units: NN_UNITS },
+];
+
 const modules = new Map<string, ModuleDef>();
-for (const unit of UNITS) for (const m of unit.items) modules.set(m.key, m);
+const courseOf = new Map<string, Course>();
+for (const course of COURSES) {
+  for (const unit of course.units) {
+    for (const m of unit.items) {
+      modules.set(m.key, m);
+      courseOf.set(m.key, course);
+    }
+  }
+}
 
 const app = document.getElementById("app")!;
 const nav = document.getElementById("nav")!;
+const courseNav = document.getElementById("courses")!;
 let cleanup: (() => void) | null = null;
 
-for (const unit of UNITS) {
-  const label = document.createElement("div");
-  label.className = "nav-unit";
-  label.textContent = unit.name;
-  nav.appendChild(label);
-  for (const m of unit.items) {
-    const btn = document.createElement("button");
-    btn.className = "nav-item";
-    btn.dataset.key = m.key;
-    btn.innerHTML = `<span class="lect">${m.lect}</span><span>${m.title}</span>`;
-    btn.onclick = () => {
-      location.hash = m.key;
-    };
-    nav.appendChild(btn);
+for (const course of COURSES) {
+  const btn = document.createElement("button");
+  btn.textContent = course.title;
+  btn.dataset.course = course.key;
+  btn.onclick = () => {
+    location.hash = course.units[0].items[0].key;
+  };
+  courseNav.appendChild(btn);
+}
+
+function renderNav(course: Course, activeKey: string): void {
+  nav.innerHTML = "";
+  for (const unit of course.units) {
+    const label = document.createElement("div");
+    label.className = "nav-unit";
+    label.textContent = unit.name;
+    nav.appendChild(label);
+    for (const m of unit.items) {
+      const btn = document.createElement("button");
+      btn.className = "nav-item" + (m.key === activeKey ? " active" : "");
+      btn.innerHTML = `<span class="lect">${m.lect}</span><span>${m.title}</span>`;
+      btn.onclick = () => {
+        location.hash = m.key;
+      };
+      nav.appendChild(btn);
+    }
   }
 }
 
 function route(): void {
   let key = location.hash.slice(1);
   if (!modules.has(key)) key = "rowcol";
+  const course = courseOf.get(key)!;
   cleanup?.();
   app.innerHTML = "";
-  nav.querySelectorAll<HTMLButtonElement>(".nav-item").forEach((b) => {
-    b.classList.toggle("active", b.dataset.key === key);
+  courseNav.querySelectorAll<HTMLButtonElement>("button").forEach((b) => {
+    b.classList.toggle("active", b.dataset.course === course.key);
   });
+  renderNav(course, key);
   cleanup = modules.get(key)!.mount(app);
 }
 
