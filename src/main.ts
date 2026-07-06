@@ -18,6 +18,11 @@ import { mountProb } from "./modules/nn/prob";
 import { mountAutograd } from "./modules/nn/autograd";
 import { mountGd } from "./modules/nn/gd";
 import { mountBigram } from "./modules/nn/bigram";
+import { mountEmbed } from "./modules/nn/embed";
+import { mountHealth } from "./modules/nn/health";
+import { mountWavenet } from "./modules/nn/wavenet";
+import { mountAttention } from "./modules/nn/attention";
+import { mountBpe } from "./modules/nn/bpe";
 
 interface ModuleDef {
   key: string;
@@ -80,13 +85,25 @@ const NN_UNITS: Unit[] = [
   {
     name: "视频① · micrograd",
     items: [
-      { key: "autograd", lect: "①", title: "计算图与反向传播", mount: mountAutograd },
+      { key: "autograd", lect: "①·⑤", title: "计算图与反向传播", mount: mountAutograd },
       { key: "gd", lect: "①", title: "梯度下降实验台", mount: mountGd },
     ],
   },
   {
-    name: "视频② · makemore",
-    items: [{ key: "bigram", lect: "②", title: "Bigram 语言模型", mount: mountBigram }],
+    name: "视频②③④ · makemore",
+    items: [
+      { key: "bigram", lect: "②", title: "Bigram 语言模型", mount: mountBigram },
+      { key: "embed", lect: "③", title: "MLP 与嵌入空间", mount: mountEmbed },
+      { key: "health", lect: "④", title: "激活与梯度健康", mount: mountHealth },
+    ],
+  },
+  {
+    name: "视频⑥⑦⑧ · 走向 GPT",
+    items: [
+      { key: "wavenet", lect: "⑥", title: "WaveNet 层级感受野", mount: mountWavenet },
+      { key: "attention", lect: "⑦", title: "注意力机制", mount: mountAttention },
+      { key: "bpe", lect: "⑧", title: "BPE 分词器", mount: mountBpe },
+    ],
   },
 ];
 

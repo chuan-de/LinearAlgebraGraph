@@ -63,6 +63,20 @@ const PRESETS: Preset[] = [
     },
   },
   {
+    name: "梯度累加：a 被用了两次（视频⑤）",
+    leaves: [
+      { label: "a", value: 3 },
+      { label: "b", value: 2 },
+      { label: "c", value: -1 },
+    ],
+    build: (v, mk) => {
+      const a = mk.leaf("a", v[0]); // 同一个 a 喂给两个乘法
+      const ab = mk.mul("ab", a, mk.leaf("b", v[1]));
+      const ac = mk.mul("ac", a, mk.leaf("c", v[2]));
+      return mk.add("L", ab, ac);
+    },
+  },
+  {
     name: "一个神经元：tanh(x·w + b)",
     leaves: [
       { label: "x₁", value: 2 },
@@ -190,9 +204,10 @@ export function mountAutograd(root: HTMLElement): () => void {
     el(
       "p",
       "hint",
-      "对应视频①（micrograd）。任何表达式都是一张图：每个节点记得自己是谁算出来的。" +
+      "对应视频①（micrograd）与视频⑤（Backprop Ninja）。任何表达式都是一张图：每个节点记得自己是谁算出来的。" +
         "<b>前向</b>从左到右算出值；<b>反向</b>从 L 出发，按链式法则把梯度逐节点往回传。" +
-        "改左边的输入值，或者一步步点「下一步」，看梯度（金色）怎么流。",
+        "改左边的输入值，或者一步步点「下一步」，看梯度（金色）怎么流。" +
+        "「梯度累加」预设演示视频⑤最容易踩的坑：<b>一个变量被用几次，梯度就要加几次（+=，不是 =）</b>。",
     ),
   );
 
