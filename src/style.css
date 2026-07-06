@@ -1,0 +1,552 @@
+/* ============================================================
+   MIT 18.06 可视化 —— “黑板 + 讲义纸”双材质设计
+   画布是暗绿石板黑板（粉笔线条），控制面板是暖色讲义纸（油墨字）。
+   ============================================================ */
+
+:root {
+  /* 黑板侧 */
+  --slate: #141a17;
+  --board: #1b2420;
+  --board-edge: #2e3b34;
+  --chalk: #ece7d6;
+  --chalk-dim: #9aa8a0;
+  /* 讲义纸侧 */
+  --paper: #f2ecdb;
+  --paper-2: #ebe2c8;
+  --paper-edge: #d9cfb0;
+  --ink: #35332b;
+  --ink-dim: #77725f;
+  --ink-gold: #8a6a14;
+  --green-ink: #3f7d52;
+  --red-ink: #b04a5e;
+  /* 粉笔色（与 theme.ts 一致） */
+  --gold: #e6c860;
+  --green: #8fd6a2;
+  --red: #e88a9c;
+  --purple: #c8a4ea;
+  --cyan: #7fd0cf;
+  /* 字体 */
+  --serif: Cambria, Georgia, "Times New Roman", "STZhongsong", "SimSun", serif;
+  --sans: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  --mono: Consolas, "Courier New", monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  background: var(--slate);
+  color: var(--chalk);
+  font: 15px/1.65 var(--sans);
+}
+
+/* ---------- 页头 ---------- */
+
+header {
+  padding: 20px 28px 16px;
+  border-bottom: 1px solid var(--board-edge);
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+header h1 {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+header h1 .title-zh {
+  font-size: 19px;
+  color: var(--chalk-dim);
+  margin-left: 6px;
+}
+
+header .tagline {
+  font-size: 13px;
+  color: var(--chalk-dim);
+  font-style: italic;
+  font-family: var(--serif);
+}
+
+/* ---------- 布局：讲义纸侧边栏 + 黑板内容区 ---------- */
+
+.layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 22px 24px;
+}
+
+#nav {
+  width: 224px;
+  flex-shrink: 0;
+  background: var(--paper);
+  border: 1px solid var(--paper-edge);
+  border-radius: 10px;
+  padding: 14px 0 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 22px;
+}
+
+.nav-unit {
+  font-size: 11.5px;
+  letter-spacing: 1.5px;
+  color: var(--ink-dim);
+  padding: 14px 16px 5px;
+  font-weight: 600;
+}
+
+.nav-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  padding: 6px 16px 6px 13px;
+  color: var(--ink);
+  font: 14px/1.5 var(--sans);
+  cursor: pointer;
+}
+
+.nav-item .lect {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  min-width: 40px;
+  flex-shrink: 0;
+}
+
+.nav-item:hover {
+  background: var(--paper-2);
+}
+
+.nav-item.active {
+  background: #ecdfae;
+  border-left-color: var(--ink-gold);
+  font-weight: 600;
+}
+
+.nav-item.active .lect {
+  color: var(--ink-gold);
+}
+
+main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------- 模块布局 ---------- */
+
+.module {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+/* ---------- 讲义纸控制面板 ---------- */
+
+.panel {
+  width: 300px;
+  background: var(--paper);
+  border: 1px solid var(--paper-edge);
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.panel h2 {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--paper-edge);
+  padding-bottom: 8px;
+}
+
+.hint {
+  color: var(--ink-dim);
+  font-size: 13px;
+}
+
+.hint b {
+  color: var(--ink);
+}
+
+/* ---------- 黑板画布 ---------- */
+
+.canvas-col {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.canvas-col h3 {
+  font-size: 13.5px;
+  color: var(--chalk-dim);
+  font-weight: 500;
+}
+
+canvas.plane {
+  background: radial-gradient(ellipse at 50% 40%, #212c26 0%, var(--board) 55%, #161e1a 100%);
+  border: 1px solid var(--board-edge);
+  border-radius: 8px;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
+  width: 580px;
+  height: 580px;
+  max-width: 100%;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.canvas-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.canvas-row canvas.plane {
+  width: 400px;
+  height: 400px;
+}
+
+/* ---------- 矩阵 / 向量输入 ---------- */
+
+.matrix {
+  display: inline-grid;
+  grid-template-columns: repeat(2, 62px);
+  gap: 6px;
+  padding: 6px 10px;
+  position: relative;
+}
+
+.matrix.vec {
+  grid-template-columns: 62px;
+}
+
+.matrix.m3 {
+  grid-template-columns: repeat(3, 54px);
+}
+
+.matrix::before,
+.matrix::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 7px;
+  border: 2px solid var(--ink-dim);
+}
+
+.matrix::before {
+  left: 0;
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+}
+
+.matrix::after {
+  right: 0;
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+}
+
+.matrix input {
+  width: 100%;
+  background: #faf6ea;
+  border: 1px solid var(--paper-edge);
+  color: var(--ink);
+  border-radius: 5px;
+  padding: 5px 4px;
+  font-size: 14px;
+  text-align: center;
+  font-family: var(--mono);
+}
+
+.matrix input:focus {
+  outline: none;
+  border-color: var(--ink-gold);
+}
+
+.matrix .cell-mirror {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper-2);
+  border: 1px dashed var(--paper-edge);
+  color: var(--ink-dim);
+  border-radius: 5px;
+  font-family: var(--mono);
+  font-size: 14px;
+}
+
+/* ---------- 面板控件 ---------- */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.slider-label {
+  font-family: var(--serif);
+  font-style: italic;
+  min-width: 16px;
+}
+
+.slider-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  min-width: 42px;
+  text-align: right;
+  color: var(--ink-dim);
+}
+
+input[type="range"] {
+  flex: 1;
+  accent-color: var(--ink-gold);
+  min-width: 110px;
+}
+
+button.btn {
+  background: var(--paper-2);
+  border: 1px solid #c9bd9c;
+  color: var(--ink);
+  padding: 7px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 14px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+}
+
+button.btn:hover {
+  background: #e6dbba;
+}
+
+button.btn.primary {
+  background: #e9d189;
+  border-color: #b89a3e;
+  color: #4a3d12;
+  font-weight: 600;
+}
+
+button.btn.primary:hover {
+  background: #e2c76e;
+}
+
+select {
+  background: var(--paper-2);
+  border: 1px solid #c9bd9c;
+  color: var(--ink);
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 14px;
+  width: 100%;
+}
+
+label.check {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  font-size: 13.5px;
+  color: var(--ink-dim);
+  cursor: pointer;
+}
+
+label.check input {
+  accent-color: var(--ink-gold);
+}
+
+/* ---------- 读出区 / 状态行 ---------- */
+
+.readout {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  background: var(--paper-2);
+  border: 1px solid var(--paper-edge);
+  border-radius: 7px;
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  color: var(--ink);
+}
+
+.status {
+  font-size: 13.5px;
+  min-height: 44px;
+  color: var(--ink);
+}
+
+.status-ok {
+  color: var(--ink-gold);
+  font-weight: 700;
+}
+
+.dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: baseline;
+}
+
+/* ---------- 消元“作业纸”模块 ---------- */
+
+.worksheet {
+  flex: 1;
+  min-width: 460px;
+  background: var(--paper);
+  border: 1px solid var(--paper-edge);
+  border-radius: 10px;
+  padding: 22px 26px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  color: var(--ink);
+}
+
+.worksheet h3 {
+  font-family: var(--serif);
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.step-desc {
+  font-family: var(--serif);
+  font-size: 15px;
+  margin: 10px 0 14px;
+}
+
+.step-desc .op {
+  color: var(--ink-gold);
+  font-weight: 700;
+}
+
+.mx-line {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+  font-family: var(--serif);
+  font-size: 16px;
+}
+
+.mx {
+  display: inline-grid;
+  gap: 4px 12px;
+  padding: 8px 14px;
+  position: relative;
+  font-family: var(--mono);
+  font-size: 14.5px;
+}
+
+.mx::before,
+.mx::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  border: 2px solid var(--ink);
+}
+
+.mx::before {
+  left: 0;
+  border-right: none;
+  border-radius: 5px 0 0 5px;
+}
+
+.mx::after {
+  right: 0;
+  border-left: none;
+  border-radius: 0 5px 5px 0;
+}
+
+.mx span {
+  text-align: center;
+  min-width: 34px;
+  padding: 2px 3px;
+  border-radius: 4px;
+}
+
+.mx span.pivot {
+  background: #e9d189;
+  color: #4a3d12;
+  font-weight: 700;
+}
+
+.mx span.target {
+  background: #eec5cd;
+  color: #7c2f3e;
+}
+
+.mx span.zeroed {
+  color: var(--ink-dim);
+}
+
+/* ---------- 可达性与响应式 ---------- */
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--ink-gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (max-width: 1000px) {
+  .layout {
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  #nav {
+    width: 100%;
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    padding: 10px;
+    gap: 2px;
+  }
+
+  .nav-unit {
+    width: 100%;
+    padding: 8px 8px 2px;
+  }
+
+  .nav-item {
+    width: auto;
+    border-left: none;
+    border-radius: 6px;
+    padding: 5px 10px;
+  }
+
+  .panel {
+    width: 100%;
+  }
+
+  .worksheet {
+    min-width: 0;
+  }
+}
