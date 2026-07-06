@@ -498,6 +498,14 @@ label.check input {
   color: var(--ink-dim);
 }
 
+.mx span.aug {
+  border-left: 1.5px solid var(--ink-dim);
+  border-radius: 0;
+  margin-left: 4px;
+  padding-left: 14px;
+  color: var(--ink-gold);
+}
+
 /* ---------- 可达性与响应式 ---------- */
 
 button:focus-visible,

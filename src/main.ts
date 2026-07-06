@@ -10,6 +10,7 @@ import { mountPowers } from "./modules/powers";
 import { mountOde } from "./modules/ode";
 import { mountQuadform } from "./modules/quadform";
 import { mountSvd } from "./modules/svd";
+import { mountQr } from "./modules/qr";
 
 interface ModuleDef {
   key: string;
@@ -32,6 +33,7 @@ const UNITS: { name: string; items: ModuleDef[] }[] = [
     name: "单元二 · 正交与行列式",
     items: [
       { key: "project", lect: "L15–16", title: "投影与最小二乘", mount: mountProject },
+      { key: "qr", lect: "L17", title: "Gram-Schmidt 与 QR", mount: mountQr },
       { key: "determinant", lect: "L18–20", title: "行列式与面积", mount: mountDeterminant },
     ],
   },
